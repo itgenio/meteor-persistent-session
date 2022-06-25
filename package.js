@@ -1,6 +1,6 @@
 Package.describe({
   name: "itgenio:persistent-session",
-  version: "0.4.9",
+  version: "0.4.10",
   summary: "Persistently store Session data on the client",
   git: "https://github.com/itgenio/meteor-persistent-session"
 });
