@@ -1,7 +1,7 @@
 ### [0.4.7]
 
 * TypeScript
-* Only supports Meteor 1.8+
+* Only supports Meteor 1.8.2+
 
 ### [0.4.4](https://github.com/okgrow/meteor-persistent-session/compare/v0.4.3...v0.4.4)
 
