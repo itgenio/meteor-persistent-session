@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "meteor test-packages ./",
-    "publish": "npm prune --production && meteor publish",
+    "publish:meteor": "npm prune --production && meteor publish",
     "test-ci": "mtest --package ./ --once"
   },
   "repository": {
