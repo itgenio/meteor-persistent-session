@@ -1,6 +1,6 @@
 Package.describe({
   name: "itgenio:persistent-session",
-  version: "0.4.7",
+  version: "0.4.8",
   summary: "Persistently store Session data on the client",
   git: "https://github.com/itgenio/meteor-persistent-session"
 });
@@ -11,7 +11,7 @@ function configurePackages(api) {
   // If `accounts-base` is loaded, we have to make sure that this package is
   // loaded after `accounts-base` is, so we specify `weak: true` here
   api.use('accounts-base', {weak: true});
-  api.addFiles('lib/persistent_session.ts', 'client');
+  api.mainModule('lib/persistent_session.ts', 'client');
 }
 
 Package.onUse(function (api) {
