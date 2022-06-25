@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { EJSON } from 'meteor/ejson';
 import { Tracker } from 'meteor/tracker';
 import { Session } from 'meteor/session';
@@ -461,7 +462,3 @@ const defaultSession = new PersistentSession("session");
 
 Object.assign(Session, defaultSession);
 Object.setPrototypeOf(Session, PersistentSession.prototype)
-
-console.log(Session)
-console.log(ReactiveDict)
-
