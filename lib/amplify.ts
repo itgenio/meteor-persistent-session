@@ -13,7 +13,7 @@ export const amplify = new (class SimpleAmplify {
       while (key = localStorage.key(i++)) {
         if (!rprefix.test(key)) continue;
 
-        const parsed = JSON.parse(localStorage.getItem(key));
+        const parsed = JSON.parse(localStorage.getItem(key) ?? '');
 
         if (parsed.expires && parsed.expires <= now) {
           removed.push(key);

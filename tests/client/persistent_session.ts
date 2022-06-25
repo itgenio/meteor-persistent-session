@@ -1,4 +1,5 @@
 import { Random } from 'meteor/random';
+import { Session } from 'meteor/session';
 import { LifetimeType, PersistentSession } from '../../lib/persistent_session';
 import { amplify } from "../../lib/amplify";
 import { PS_KEYS } from "../../lib/constants";
@@ -58,6 +59,7 @@ Tinytest.add("Clear keys - skip undefined keys", function (test) {
   const TestSession = new PersistentSession(Random.id());
   test.equal(Object.keys(TestSession.reactiveDict.keys).length, 0);
 
+  // @ts-expect-error
   TestSession.set(undefined, 'woo');
   test.equal(Object.keys(TestSession.reactiveDict.keys).length, 1);
 
@@ -299,6 +301,13 @@ Tinytest.add("All - all() works", function (test) {
     "foobarfoo": "fact",
     "barfoobar": "entity"
   }, result);
+});
+
+Tinytest.add('Session - has valid prototype', function (test) {
+  // @ts-ignore
+  Session.setPersistent('testkey', 1);
+
+  test.equal(Session.get('testkey'), 1);
 });
 
 Tinytest.add("Migrations - updates from 3.x to 4.x", function (test) {

@@ -22,8 +22,8 @@ export function migrateToEJSON(dictName: string) {
     return;
   }
 
-  const psKeyList = amplify.get(PS_KEYS + dictName) || [] as string[];
-  const psaKeyList = amplify.get(PSA_KEYS + dictName) || [] as string[];
+  const psKeyList = (amplify.get(PS_KEYS + dictName) || []) as string[];
+  const psaKeyList = (amplify.get(PSA_KEYS + dictName) || []) as string[];
 
   [psKeyList, psaKeyList].forEach(list => list.forEach(key => {
       amplify.store(key, EJSON.stringify(amplify.get(key)));
@@ -38,8 +38,8 @@ export function migrate3Xto4X(dictName: string) {
     return;
   }
 
-  const psKeyList = amplify.get(PS_KEYS + dictName) || [] as string[];
-  const psaKeyList = amplify.get(PSA_KEYS + dictName) || [] as string[];
+  const psKeyList = (amplify.get(PS_KEYS + dictName) || []) as string[];
+  const psaKeyList = (amplify.get(PSA_KEYS + dictName) || []) as string[];
 
   [psKeyList, psaKeyList].forEach(list => list.forEach(key => {
     let invalid = false;

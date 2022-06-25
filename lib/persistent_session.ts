@@ -19,21 +19,21 @@ declare module 'meteor/reactive-dict' {
 // this file: https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js
 //
 // helpers: https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L1-L16
-const stringify = function (value) {
+const stringify = function (value: unknown) {
   if (value === undefined) {
     return 'undefined';
   }
-  return EJSON.stringify(value);
+  return EJSON.stringify(value as any);
 };
 
-const parse = function (serialized) {
+const parse = function (serialized: unknown) {
   if (serialized === undefined || serialized === 'undefined') {
     return undefined;
   }
-  return EJSON.parse(serialized);
+  return EJSON.parse(serialized as any);
 };
 
-const changed = function (v) {
+const changed = function (v?: { changed: Function }) {
   v && v.changed();
 };
 
@@ -171,15 +171,9 @@ export class PersistentSession {
     amplify.store(this._dictName + key, EJSON.toJSONValue(value));
   };
 
-
   // === GET ===
-  // keep for backwards compatibility, redirect to this._dict
-  old_get(...params: any[]) {
-    return this._dict.get.apply(this._dict, params);
-  };
-
   get(key: string) {
-    const val = this.old_get(key);
+    const val = this._dict.get(key);
     let psVal;
     const unparsedPsVal = this.store('get', key);
     if (unparsedPsVal !== undefined) {
@@ -197,11 +191,6 @@ export class PersistentSession {
   };
 
   // === SET ===
-  old_set(...params: any[]) {
-    // defaults to a persistent, non-authenticated variable
-    return this._dict.set.apply(this._dict, params);
-  };
-
   set(keyOrObject: Object | string, value?: any, persist?: boolean, auth?: boolean) {
     // Taken from https://github.com/meteor/meteor/blob/107d858/packages/reactive-dict/reactive-dict.js
     if ((typeof keyOrObject === 'object') && (value === undefined)) {
@@ -219,9 +208,8 @@ export class PersistentSession {
       }
     }
     this.store(type, key, value);
-    this.old_set(key, value);
+    this._dict.set(key, value);
   };
-
 
   // Taken from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L144-L151
   // Backwards compat:
@@ -238,7 +226,7 @@ export class PersistentSession {
     Object.entries(object).forEach(([key, val]) => this.set(key, val, persist, auth));
   };
 
-  _ensureKey(key): void {
+  _ensureKey(key: string): void {
     const dict = this._dict;
 
     if (key in dict.keyDeps) return;
@@ -250,11 +238,12 @@ export class PersistentSession {
 
   // === EQUALS ===
   // Taken from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L93-L137
-  equals(key: string, value) {
-
+  equals(key: string, value: any) {
     // Mongo.ObjectID is in the 'mongo' package
     let ObjectID = null;
+    // @ts-ignore
     if (Package['mongo']) {
+      // @ts-ignore
       ObjectID = Package['mongo'].Mongo.ObjectID;
     }
 
@@ -338,17 +327,12 @@ export class PersistentSession {
     this.store(LifetimeType.Persistent, key, val);
   };
 
-  makeAuth(key): void {
+  makeAuth(key: string): void {
     const val = this.get(key);
     this.store(LifetimeType.Authenticated, key, val);
   };
 
-
   // === CLEAR ===
-  old_clear(...params: any[]) {
-    return this._dict.clear.apply(this._dict, params);
-  };
-
   // more or less how it's implemented in reactive dict, but add support for removing single or arrays of keys
   // Derived from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L153-L167
   clear(key?: string, list?: string[] | Record<string, any>) {
@@ -368,7 +352,7 @@ export class PersistentSession {
         keysToRemove = list.reduce((acc, key) => {
           acc[key] = oldKeys[key];
           return acc;
-        }, {})
+        }, {} as Record<string, any>)
       } else {
         keysToRemove = list;
       }
@@ -415,7 +399,7 @@ export class PersistentSession {
 
   // === UPDATE ===
   // updates the value of a session var without changing its type
-  update(key: string, value): void {
+  update(key: string, value?: any): void {
     let persist;
     let auth;
 
@@ -431,10 +415,6 @@ export class PersistentSession {
   };
 
   // === SET DEFAULT ===
-  old_setDefault(...args: any[]) {
-    return this._dict.setDefault.apply(this._dict, args);
-  };
-
   setDefault(keyOrObject: string | Object, value?: any, persist?: boolean, auth?: boolean): void {
     const self = this;
 
@@ -477,4 +457,11 @@ export class PersistentSession {
 }
 
 // automatically apply PersistentSession to Session
-Object.assign(Session, new PersistentSession("session"))
+const defaultSession = new PersistentSession("session");
+
+Object.assign(Session, defaultSession);
+Object.setPrototypeOf(Session, PersistentSession.prototype)
+
+console.log(Session)
+console.log(ReactiveDict)
+

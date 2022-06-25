@@ -11,7 +11,8 @@
   "scripts": {
     "test": "meteor test-packages ./",
     "publish:meteor": "npm prune --production && meteor publish",
-    "test-ci": "mtest --package ./ --once"
+    "test-ci": "mtest --package ./ --once",
+    "tsc": "tsc"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,6 @@
   "homepage": "https://github.com/itgenio/meteor-persistent-session#readme",
   "devDependencies": {
     "@types/meteor": "^2.7.1",
-    "typescript": "^4.7.4"
+    "typescript": "~4.5.5"
   }
 }
