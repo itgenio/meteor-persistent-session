@@ -1,15 +1,10 @@
-This project is supported by Cult of Coders
-=======
-
 Purpose
 =======
 Make Meteor's `Session` object persist its values locally and across page
 refreshes. Meteor's default implementation loses values whenever the page is
 refreshed.
 
-Uses [amplifyjs's store](http://amplifyjs.com/api/store/) library to save
-values in the browsers `localStorage`, falling back to other solutions if it's
-not available.
+It saves values in the browsers `localStorage`.
 
 Upgrading from 0.2.x to 0.3.x
 =============================
@@ -35,7 +30,7 @@ to `persistent`:
 Installation
 ============
 ```
-meteor add cultofcoders:persistent-session
+meteor add itgenio:persistent-session
 ```
 **Note:** To use persistent-session, your project must have Session already installed. You can add Meteor's Session package by `meteor add session`.
 
@@ -44,11 +39,6 @@ that will save after a refresh.
 
 If you'd like, you can have `Session.set` do this as well. See the Options
 section below.
-
-For Meteor 1.3+
----------------
-
-If your app is using the imports syntax, the persistent-session package will work by simply importing Session where it is used. e.g - `import { Session } from 'meteor/session'`
 
 Types
 =====

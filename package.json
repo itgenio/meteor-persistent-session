@@ -1,0 +1,30 @@
+{
+  "name": "meteor-persistent-session",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Persistently store Session data on the client",
+  "main": "package.js",
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "meteor test-packages ./",
+    "publish": "npm prune --production && meteor publish",
+    "test-ci": "mtest --package ./ --once"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itgenio/meteor-persistent-session.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/itgenio/meteor-persistent-session/issues"
+  },
+  "homepage": "https://github.com/itgenio/meteor-persistent-session#readme",
+  "devDependencies": {
+    "@types/meteor": "^2.7.1",
+    "typescript": "^4.7.4"
+  }
+}
