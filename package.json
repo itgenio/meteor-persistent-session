@@ -9,7 +9,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "meteor test-packages ./",
+    "test": "meteor test-packages ./ --port 3010",
     "publish:meteor": "npm prune --production && meteor publish",
     "test-ci": "mtest --package ./ --once",
     "tsc": "tsc"

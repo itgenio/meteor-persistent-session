@@ -1,11 +1,11 @@
-import { Meteor } from 'meteor/meteor';
 import { EJSON } from 'meteor/ejson';
-import { Tracker } from 'meteor/tracker';
-import { Session } from 'meteor/session';
+import { Meteor } from 'meteor/meteor';
 import { ReactiveDict } from 'meteor/reactive-dict';
+import { Session } from 'meteor/session';
+import { Tracker } from 'meteor/tracker';
 import { amplify } from './amplify';
-import { migrate3Xto4X, migrateToEJSON } from "./migrations";
-import { PS_KEYS, PSA_KEYS } from "./constants";
+import { PS_KEYS, PSA_KEYS } from './constants';
+import { migrate3Xto4X, migrateToEJSON } from './migrations';
 
 declare module 'meteor/reactive-dict' {
   interface ReactiveDict {
@@ -51,7 +51,7 @@ const oldSession = new ReactiveDict('_session');
 export enum LifetimeType {
   Temporary = 'temporary',
   Persistent = 'persistent',
-  Authenticated = 'authenticated'
+  Authenticated = 'authenticated',
 }
 
 export class PersistentSession {
@@ -83,17 +83,16 @@ export class PersistentSession {
       this._dictName = dictName;
 
       // when "session", use the existing dict
-      if (dictName === "session") {
-        this._dictName = "";   // we don't need a name for session
+      if (dictName === 'session') {
+        this._dictName = ''; // we don't need a name for session
         this._dict = oldSession; // we also want to use the global (in case something was set previously)
 
         // not session? create a new dict
       } else {
         this._dict = new ReactiveDict(dictName);
       }
-
     } else {
-      throw new Error("dictName must be a string");
+      throw new Error('dictName must be a string');
     }
 
     // initialize default method setting
@@ -133,18 +132,18 @@ export class PersistentSession {
       // lazy check for accounts-base
       if (!Meteor.userId) return;
 
-      const userId = Meteor.userId()
+      const userId = Meteor.userId();
       if (userId) {
         // user is logged in, leave session as is
       } else {
         // user is unset, clear authenticated keys
-        this.clearAuth()
+        this.clearAuth();
       }
     });
   }
 
   // === LOCAL STORAGE INTERACTION ===
-  store(type: 'get' | LifetimeType, key: string, value?: any) {
+  store = (type: 'get' | LifetimeType, key: string, value?: any) => {
     // use dict name for uniqueness
 
     if (type === 'get') {
@@ -173,7 +172,7 @@ export class PersistentSession {
   };
 
   // === GET ===
-  get(key: string) {
+  get = (key: string) => {
     const val = this._dict.get(key);
     let psVal;
     const unparsedPsVal = this.store('get', key);
@@ -192,16 +191,20 @@ export class PersistentSession {
   };
 
   // === SET ===
-  set(keyOrObject: Object | string, value?: any, persist?: boolean, auth?: boolean) {
+  set = (keyOrObject: Object | string, value?: any, persist?: boolean, auth?: boolean) => {
     // Taken from https://github.com/meteor/meteor/blob/107d858/packages/reactive-dict/reactive-dict.js
-    if ((typeof keyOrObject === 'object') && (value === undefined)) {
+    if (typeof keyOrObject === 'object' && value === undefined) {
       this._setObject(keyOrObject, persist, auth);
       return;
     }
 
     const key = keyOrObject as string;
     let type: LifetimeType = LifetimeType.Temporary;
-    if (persist || (persist === undefined && (this.default_method == LifetimeType.Persistent || this.default_method == LifetimeType.Authenticated))) {
+    if (
+      persist ||
+      (persist === undefined &&
+        (this.default_method == LifetimeType.Persistent || this.default_method == LifetimeType.Authenticated))
+    ) {
       if (auth || (persist === undefined && auth === undefined && this.default_method == LifetimeType.Authenticated)) {
         type = LifetimeType.Authenticated;
       } else {
@@ -214,32 +217,31 @@ export class PersistentSession {
 
   // Taken from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L144-L151
   // Backwards compat:
-  all() {
+  all = () => {
     this._dict.allDeps?.depend();
 
     return Object.entries(this._dict.keys).reduce((acc, [key, value]) => {
       acc[key] = parse(value);
       return acc;
     }, {} as Record<string, any>);
-  }
+  };
 
-  _setObject(object: Object, persist?: boolean, auth?: boolean) {
+  _setObject = (object: Object, persist?: boolean, auth?: boolean) => {
     Object.entries(object).forEach(([key, val]) => this.set(key, val, persist, auth));
   };
 
-  _ensureKey(key: string): void {
+  _ensureKey = (key: string): void => {
     const dict = this._dict;
 
     if (key in dict.keyDeps) return;
 
-    dict.keyDeps[key] = new Tracker.Dependency;
+    dict.keyDeps[key] = new Tracker.Dependency();
     dict.keyValueDeps[key] = {};
-
-  }
+  };
 
   // === EQUALS ===
   // Taken from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L93-L137
-  equals(key: string, value: any) {
+  equals = (key: string, value: any) => {
     // Mongo.ObjectID is in the 'mongo' package
     let ObjectID = null;
     // @ts-ignore
@@ -257,14 +259,16 @@ export class PersistentSession {
     //
     // XXX we could allow arrays as long as we recursively check that there
     // are no objects
-    if (typeof value !== 'string' &&
+    if (
+      typeof value !== 'string' &&
       typeof value !== 'number' &&
       typeof value !== 'boolean' &&
       typeof value !== 'undefined' &&
       !(value instanceof Date) &&
       !(ObjectID && value instanceof ObjectID) &&
-      value !== null) {
-      throw new Error("ReactiveDict.equals: value must be scalar");
+      value !== null
+    ) {
+      throw new Error('ReactiveDict.equals: value must be scalar');
     }
 
     const serializedValue = stringify(value);
@@ -273,7 +277,7 @@ export class PersistentSession {
       this._ensureKey(key);
 
       if (!hasKey(this._dict.keyValueDeps[key], serializedValue)) {
-        this._dict.keyValueDeps[key][serializedValue] = new Tracker.Dependency;
+        this._dict.keyValueDeps[key][serializedValue] = new Tracker.Dependency();
       }
 
       const isNew = this._dict.keyValueDeps[key][serializedValue].depend();
@@ -296,39 +300,38 @@ export class PersistentSession {
 
   // === SET TEMPORARY ===
   // alias to .set(); sets a non-persistent variable
-  setTemporary(keyOrObject: string | Object, value: any): void {
+  setTemporary = (keyOrObject: string | Object, value: any): void => {
     this.set(keyOrObject, value, false, false);
   };
 
-  setTemp(keyOrObject: string | Object, value: any): void {
+  setTemp = (keyOrObject: string | Object, value: any): void => {
     this.set(keyOrObject, value, false, false);
   };
 
   // === SET PERSISTENT ===
   // alias to .set(); sets a persistent variable
-  setPersistent(keyOrObject: string | Object, value: any): void {
+  setPersistent = (keyOrObject: string | Object, value: any): void => {
     this.set(keyOrObject, value, true, false);
   };
 
   // === SET AUTHENTICATED ===
   // alias to .set(); sets a persistent variable that will be removed on logout
-  setAuth(keyOrObject: string | Object, value: any): void {
+  setAuth = (keyOrObject: string | Object, value: any): void => {
     this.set(keyOrObject, value, true, true);
   };
 
-
   // === MAKE TEMP / PERSISTENT / AUTH ===
   // change the type of session var
-  makeTemp(key: string): void {
+  makeTemp = (key: string): void => {
     this.store(LifetimeType.Temporary, key);
   };
 
-  makePersistent(key: string): void {
+  makePersistent = (key: string): void => {
     const val = this.get(key);
     this.store(LifetimeType.Persistent, key, val);
   };
 
-  makeAuth(key: string): void {
+  makeAuth = (key: string): void => {
     const val = this.get(key);
     this.store(LifetimeType.Authenticated, key, val);
   };
@@ -336,7 +339,7 @@ export class PersistentSession {
   // === CLEAR ===
   // more or less how it's implemented in reactive dict, but add support for removing single or arrays of keys
   // Derived from https://github.com/meteor/meteor/blob/0ef65cc/packages/reactive-dict/reactive-dict.js#L153-L167
-  clear(key?: string, list?: string[] | Record<string, any>) {
+  clear = (key?: string, list?: string[] | Record<string, any>) => {
     const dict = this._dict;
     const oldKeys = dict.keys;
 
@@ -344,7 +347,7 @@ export class PersistentSession {
     if (key === undefined && list === undefined) {
       keysToRemove = oldKeys;
     } else if (key !== undefined) {
-      list = [key]
+      list = [key];
     }
 
     // okay, if it was an array of keys, find the old key pairings for reactivity
@@ -353,7 +356,7 @@ export class PersistentSession {
         keysToRemove = list.reduce((acc, key) => {
           acc[key] = oldKeys[key];
           return acc;
-        }, {} as Record<string, any>)
+        }, {} as Record<string, any>);
       } else {
         keysToRemove = list;
       }
@@ -375,11 +378,10 @@ export class PersistentSession {
     dict.allDeps?.changed();
   };
 
-
   // === CLEAR TEMP ===
   // clears all the temporary keys
-  clearTemp(): void {
-    const ommitedKeys = new Set([...Object.keys(this.psKeys), ...Object.keys(this.psaKeys)])
+  clearTemp = (): void => {
+    const ommitedKeys = new Set([...Object.keys(this.psKeys), ...Object.keys(this.psaKeys)]);
 
     const keysToClear = Object.keys(this._dict.keys).filter(k => !ommitedKeys.has(k));
 
@@ -388,19 +390,19 @@ export class PersistentSession {
 
   // === CLEAR PERSISTENT ===
   // clears all persistent keys
-  clearPersistent(): void {
+  clearPersistent = (): void => {
     this.clear(undefined, this.psKeys);
   };
 
   // === CLEAR AUTH ===
   // clears all authenticated keys
-  clearAuth(): void {
+  clearAuth = (): void => {
     this.clear(undefined, this.psaKeys);
   };
 
   // === UPDATE ===
   // updates the value of a session var without changing its type
-  update(key: string, value?: any): void {
+  update = (key: string, value?: any): void => {
     let persist;
     let auth;
 
@@ -416,7 +418,7 @@ export class PersistentSession {
   };
 
   // === SET DEFAULT ===
-  setDefault(keyOrObject: string | Object, value?: any, persist?: boolean, auth?: boolean): void {
+  setDefault = (keyOrObject: string | Object, value?: any, persist?: boolean, auth?: boolean): void => {
     const self = this;
 
     if (isObject(keyOrObject)) {
@@ -430,7 +432,7 @@ export class PersistentSession {
   };
 
   // === SET DEFAULT TEMP ===
-  setDefaultTemp(keyOrObject: string | Object, value?: any): void {
+  setDefaultTemp = (keyOrObject: string | Object, value?: any): void => {
     if (isObject(keyOrObject)) {
       value = undefined;
     }
@@ -439,7 +441,7 @@ export class PersistentSession {
   };
 
   // === SET DEFAULT PERSISTENT ===
-  setDefaultPersistent(keyOrObject: string | Object, value?: any): void {
+  setDefaultPersistent = (keyOrObject: string | Object, value?: any): void => {
     if (isObject(keyOrObject)) {
       value = undefined;
     }
@@ -448,7 +450,7 @@ export class PersistentSession {
   };
 
   // === SET DEFAULT AUTH ===
-  setDefaultAuth(keyOrObject: string | Object, value?: any): void {
+  setDefaultAuth = (keyOrObject: string | Object, value?: any): void => {
     if (isObject(keyOrObject)) {
       value = undefined;
     }
@@ -458,7 +460,6 @@ export class PersistentSession {
 }
 
 // automatically apply PersistentSession to Session
-const defaultSession = new PersistentSession("session");
+const defaultSession = new PersistentSession('session');
 
 Object.assign(Session, defaultSession);
-Object.setPrototypeOf(Session, PersistentSession.prototype)

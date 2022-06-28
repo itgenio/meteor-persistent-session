@@ -1,8 +1,8 @@
 Package.describe({
-  name: "itgenio:persistent-session",
-  version: "0.4.10",
-  summary: "Persistently store Session data on the client",
-  git: "https://github.com/itgenio/meteor-persistent-session"
+  name: 'itgenio:persistent-session',
+  version: '0.4.11',
+  summary: 'Persistently store Session data on the client',
+  git: 'https://github.com/itgenio/meteor-persistent-session',
 });
 
 function configurePackages(api) {
@@ -10,7 +10,7 @@ function configurePackages(api) {
   api.use(['typescript', 'tracker', 'reactive-dict', 'session', 'ejson']);
   // If `accounts-base` is loaded, we have to make sure that this package is
   // loaded after `accounts-base` is, so we specify `weak: true` here
-  api.use('accounts-base', {weak: true});
+  api.use('accounts-base', { weak: true });
   api.mainModule('lib/persistent_session.ts', 'client');
 }
 
@@ -22,8 +22,8 @@ Package.onUse(function (api) {
 
 Package.onTest(function (api) {
   configurePackages(api);
-  api.use("tinytest");
-  api.use("random");
+  api.use('tinytest');
+  api.use('random');
 
-  api.addFiles("tests/client/persistent_session.ts", "client");
+  api.addFiles('tests/client/persistent_session.ts', 'client');
 });
